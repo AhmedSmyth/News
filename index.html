@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Trigger</title>
+</head>
+<body>
+    <div class="asset">
+        <h2>Asset Title Here</h2>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit...</p>
+        <!-- More content... -->
+    </div>
+
+    <!-- SmythOS ChatBot Script -->
+    <script src="https://cmdrf35cvkord66i5v5x55z72.agent.pa.smyth.ai/static/embodiment/chatBot/chatbot-v2.js"></script>
+    <script>
+        ChatBot.init({
+            domain: 'cmdrf35cvkord66i5v5x55z72.agent.pa.smyth.ai',
+            isChatOnly: false,
+            introMessage: 'Hello, how can I assist you today?'
+        });
+    </script>
+
+    <script>
+        document.addEventListener('click', function(event) {
+            const clickedElement = event.target;
+
+            // Try to detect chatbot toggler click
+            if (clickedElement.closest('.chatbot-toggler') ||
+                clickedElement.getAttribute('aria-label') === 'Chat with us' ||
+                clickedElement.className.includes('toggle')) {
+
+                console.log('Chatbot toggler clicked. Waiting for chat input...');
+
+                // After a short delay, try to insert the message into the input field
+                setTimeout(() => {
+                    const chatInput = document.querySelector('textarea'); // Adjust selector if needed
+                    const sendButton = document.querySelector('button[type="submit"], button[class*="send"]'); // Adjust if needed
+
+                    if (chatInput && sendButton) {
+                        const assetDiv = document.querySelector('.asset');
+                        const assetText = assetDiv.textContent.trim();
+
+                        chatInput.value = assetText;
+
+                        // Fire input event so React/Vue picks up the change
+                        chatInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+                        // Trigger the send button
+                        sendButton.click();
+
+                        console.log('Message sent to chatbot:', assetText);
+                    } else {
+                        console.error('Chat input or send button not found.');
+                    }
+                }, 1000); // Wait for widget to open
+            }
+        }, true); // Capture phase to catch all clicks early
+    </script>
+</body>
+</html>
