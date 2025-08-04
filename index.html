@@ -2802,35 +2802,53 @@ addToHomescreen();
         // ...additional settings...
     });
 </script>
-
-<!-- Script to auto-fill textarea with body text when chat opens -->
 <script>
-    document.addEventListener('click', function(event) {
-        const clickedElement = event.target;
-        // Detect chatbot open/toggle button
+function getVisibleTextFromBody() {
+    // Clone the body to avoid modifying the live DOM
+    const clone = document.body.cloneNode(true);
+
+    // Remove script, style, noscript, and template elements
+    ['script', 'style', 'noscript', 'template'].forEach(tag => {
+        clone.querySelectorAll(tag).forEach(el => el.remove());
+    });
+
+    // Remove hidden elements (display: none or visibility: hidden or aria-hidden)
+    clone.querySelectorAll('*').forEach(el => {
+        const style = window.getComputedStyle(el);
         if (
-            clickedElement.closest('.chatbot-toggler') ||
-            clickedElement.getAttribute('aria-label') === 'Chat with us' ||
-            (typeof clickedElement.className === 'string' && clickedElement.className.includes('toggle'))
+            style.display === 'none' ||
+            style.visibility === 'hidden' ||
+            el.getAttribute('aria-hidden') === 'true'
         ) {
-            setTimeout(() => {
-                // Find the chat input (textarea)
-                const chatInput = document.querySelector('textarea');
-                const sendButton = document.querySelector('button[type="submit"], button[class*="send"]');
-                if (chatInput && sendButton) {
-                    // Get all text from <body>
-                    const bodyText = document.body.textContent.trim();
-                    // Fill the textarea
-                    chatInput.value = bodyText;
-                    // Trigger input event for frameworks like React/Vue
-                    chatInput.dispatchEvent(new Event('input', { bubbles: true }));
-                    // Optionally auto-send the message:
-                    // sendButton.click();
-                }
-            }, 1000); // Wait 1s for widget to open (adjust if needed)
+            el.remove();
         }
-    }, true); // useCapture = true to catch all clicks early
+    });
+
+    // Get the trimmed text content
+    return clone.textContent.trim();
+}
+
+document.addEventListener('click', function(event) {
+    const clickedElement = event.target;
+    if (
+        clickedElement.closest('.chatbot-toggler') ||
+        clickedElement.getAttribute('aria-label') === 'Chat with us' ||
+        (typeof clickedElement.className === 'string' && clickedElement.className.includes('toggle'))
+    ) {
+        setTimeout(() => {
+            const chatInput = document.querySelector('textarea');
+            const sendButton = document.querySelector('button[type="submit"], button[class*="send"]');
+            if (chatInput && sendButton) {
+                const cleanText = getVisibleTextFromBody();
+                chatInput.value = cleanText;
+                chatInput.dispatchEvent(new Event('input', { bubbles: true }));
+                // Optionally auto-send: sendButton.click();
+            }
+        }, 1000);
+    }
+}, true);
 </script>
+
 
         </body>
 </html>
